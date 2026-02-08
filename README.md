@@ -1,5 +1,5 @@
 # JellyCacheIDK
-BaseItemRepository.cs is the version as is from jellyfin-10.11.6.zip of the official Jellyfin.Server Project, NEW_BaseItemRepository.cs is the one with changes if you want to compare.  
+BaseItemRepository.cs is the version as is from jellyfin-10.11.6.zip of the official Jellyfin.Server Project, NEW_BaseItemRepository.cs is the one with changes if you want to compare or compile yourself.
   
 Jellyfin.Server.Implementations.dll is the compiled version with the changes.  
   
