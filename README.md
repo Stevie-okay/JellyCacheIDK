@@ -10,5 +10,5 @@ Step 4. Start Jellyfin
   
 WARNING: THE NEW LINES/CHANGES ARE AI/LLM/GPT GENERATED I ONLY GAVE THE IDEAS AND INSULTED IT WHEN SOMETHING DIDN'T WORK, IT SEEMS TO WORK ON MY SET UP WHICH DOES NOT MEAN THIS IS "PERFECT" OR BY ANY MEANS PRODUCTION LEVEL CODE, I HAVE NO CLUE WHAT I'M DOING. USE AT YOUR OWN RISK.  
   
-The idea was to add a cache layer so every query gets cached and the long load times happen only on first visit FOR SOME REASON, it works right away which should take time, but it doesn't? It makes no sense. But it's fast and i haven't seen anything breaking yet lol  
+The idea was to add a cache layer so every query gets cached and the long load times happen only on first visit, FOR SOME REASON it works right away which should take time, but it doesn't? It makes no sense. But it's fast and i haven't seen anything breaking yet lol  
   
