@@ -80,7 +80,7 @@ public sealed class BaseItemRepository
     private static readonly IReadOnlyList<char> SearchWildcardTerms = ['%', '_', '[', ']', '^'];
     private static readonly MemoryCache _queryCache = new MemoryCache(new MemoryCacheOptions
     {
-        SizeLimit = 1024L * 1024L * 4096L
+        SizeLimit = 1000000
     });
     private const int CACHE_ITEM_LIMIT = 100000; // max items per query to cache
     private static readonly TimeSpan CACHE_SLIDING_EXPIRATION = TimeSpan.FromHours(3);
