@@ -80,12 +80,11 @@ public sealed class BaseItemRepository
     private static readonly IReadOnlyList<char> SearchWildcardTerms = ['%', '_', '[', ']', '^'];
     private static readonly MemoryCache _queryCache = new MemoryCache(new MemoryCacheOptions
     {
-        SizeLimit = 1024L * 1024L * 4096L // 1GB total cache limit
+        SizeLimit = 1024L * 1024L * 4096L
     });
-
     private const int CACHE_ITEM_LIMIT = 100000; // max items per query to cache
-    private static readonly TimeSpan CACHE_SLIDING_EXPIRATION = TimeSpan.FromMinutes(7200);
-
+    private static readonly TimeSpan CACHE_SLIDING_EXPIRATION = TimeSpan.FromHours(3);
+    private static readonly TimeSpan CACHE_ABSOLUTE_EXPIRATION = TimeSpan.FromDays(1);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseItemRepository"/> class.
@@ -316,6 +315,7 @@ public sealed class BaseItemRepository
             var cacheEntryOptions = new MemoryCacheEntryOptions
             {
                 SlidingExpiration = CACHE_SLIDING_EXPIRATION,
+                AbsoluteExpirationRelativeToNow = CACHE_ABSOLUTE_EXPIRATION,
                 Size = result.Items.Count // approximate size
             };
 
