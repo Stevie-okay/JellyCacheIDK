@@ -332,7 +332,11 @@ public sealed class BaseItemRepository
 
         var keyObject = new
         {
-            filter.ParentId,
+            UserId = filter.User?.Id,
+            LibraryId =
+                filter.TopParentIds != null && filter.TopParentIds.Length > 0
+                    ? string.Join(",", filter.TopParentIds.OrderBy(id => id))
+                    : filter.ParentId == Guid.Empty ? null : filter.ParentId.ToString(),
             filter.StartIndex,
             filter.Limit,
             IncludeItemTypes = filter.IncludeItemTypes?.OrderBy(t => t).ToArray(),
