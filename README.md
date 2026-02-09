@@ -1,6 +1,9 @@
 # JellyCacheIDK
 
-Note V2: First version had a issue where it couldn't differentiate between Users and two Show libraries. Added UserID and LibraryID to the Cache Key.
+Updates so far:
+First version had a issue where it couldn't differentiate between Users and two Show libraries. Added UserID and LibraryID to the Cache Key.
+5 Days cache Timeout was too high, lowered it to +3Hours (if hit again) and evict for sure after 24Hours, this should allow for new entries to show up.
+
   
 Step 1. Stop Jellyfin  
 Step 2. Go to Jellyfin/Server and PLEASE MAKE A BACKUP OF YOUR EXISTING Jellyfin.Server.Implementations.dll DON'T DELETE IT. In case there is a bug or something, simply replace it again.  
