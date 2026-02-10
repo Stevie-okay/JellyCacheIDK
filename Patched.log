@@ -57,10 +57,10 @@ Filter (FULL): InternalItemsQuery { Recursive: True, StartIndex: null, Limit: 0,
 CacheKey: "GetItems:a636739902c7fe8e309e0b113f60eb27c5d18562ac7853b017766bdddd7c690d"
 SQL:
 ".param set @__filter_IsFolder_0 0
-.param set @__filter_User_Id_1 'EC9EF8EC-DCCB-4D95-A43C-805D15473D76'
+.param set @__filter_User_Id_1 '<REDACTED>'
 .param set @__filter_IsPlayed_2 0
 .param set @__isVirtualItem_Value_3 0
-.param set @__filter_AncestorIds_4 '[\"BC19868B-9361-24B2-87B3-03DEBB119642\"]'
+.param set @__filter_AncestorIds_4 '[\"<REDACTED>"]'
 
 SELECT \"b\".\"Id\", \"b\".\"Album\", \"b\".\"AlbumArtists\", \"b\".\"Artists\", \"b\".\"Audio\", \"b\".\"ChannelId\", \"b\".\"CleanName\", \"b\".\"CommunityRating\", \"b\".\"CriticRating\", \"b\".\"CustomRating\", \"b\".\"Data\", \"b\".\"DateCreated\", \"b\".\"DateLastMediaAdded\", \"b\".\"DateLastRefreshed\", \"b\".\"DateLastSaved\", \"b\".\"DateModified\", \"b\".\"EndDate\", \"b\".\"EpisodeTitle\", \"b\".\"ExternalId\", \"b\".\"ExternalSeriesId\", \"b\".\"ExternalServiceId\", \"b\".\"ExtraIds\", \"b\".\"ExtraType\", \"b\".\"ForcedSortName\", \"b\".\"Genres\", \"b\".\"Height\", \"b\".\"IndexNumber\", \"b\".\"InheritedParentalRatingSubValue\", \"b\".\"InheritedParentalRatingValue\", \"b\".\"IsFolder\", \"b\".\"IsInMixedFolder\", \"b\".\"IsLocked\", \"b\".\"IsMovie\", \"b\".\"IsRepeat\", \"b\".\"IsSeries\", \"b\".\"IsVirtualItem\", \"b\".\"LUFS\", \"b\".\"MediaType\", \"b\".\"Name\", \"b\".\"NormalizationGain\", \"b\".\"OfficialRating\", \"b\".\"OriginalTitle\", \"b\".\"Overview\", \"b\".\"OwnerId\", \"b\".\"ParentId\", \"b\".\"ParentIndexNumber\", \"b\".\"Path\", \"b\".\"PreferredMetadataCountryCode\", \"b\".\"PreferredMetadataLanguage\", \"b\".\"PremiereDate\", \"b\".\"PresentationUniqueKey\", \"b\".\"PrimaryVersionId\", \"b\".\"ProductionLocations\", \"b\".\"ProductionYear\", \"b\".\"RunTimeTicks\", \"b\".\"SeasonId\", \"b\".\"SeasonName\", \"b\".\"SeriesId\", \"b\".\"SeriesName\", \"b\".\"SeriesPresentationUniqueKey\", \"b\".\"ShowId\", \"b\".\"Size\", \"b\".\"SortName\", \"b\".\"StartDate\", \"b\".\"Studios\", \"b\".\"Tagline\", \"b\".\"Tags\", \"b\".\"TopParentId\", \"b\".\"TotalBitrate\", \"b\".\"Type\", \"b\".\"UnratedType\", \"b\".\"Width\"
 FROM \"BaseItems\" AS \"b\"
@@ -126,4 +126,5 @@ ItemCount: 0
 !--- END: OPEN MUSIC-VIDEO LIBRARY WITH 6 SUB-FOLDERS (FULLY BROKEN OFFICIAL RELEASE) ---!
 
 !----------------------------------------------------!
+
 
