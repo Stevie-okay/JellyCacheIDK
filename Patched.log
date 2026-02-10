@@ -4,7 +4,7 @@
 
 [2026-02-10 12:02:24.769 +01:00] [INF] [10] Jellyfin.Server.Implementations.Item.BaseItemRepository: 
 
-==================== 🚨 FORENSIC CACHE ACTIVITY 🚨 ====================
+==================== 🚨 CACHE ACTIVITY 🚨 ====================
 
 [2026-02-10 12:02:24.772 +01:00] [INF] [10] Jellyfin.Server.Implementations.Item.BaseItemRepository: CACHE MISS
 CacheKey: "GetItems:c9044993a36c22ac16518ed974f1630993d1d2e42568670ea54f58e94fea2cb3"
@@ -48,7 +48,7 @@ ItemCount: 100
 
 [2026-02-10 12:05:41.304 +01:00] [INF] [48] Jellyfin.Server.Implementations.Item.BaseItemRepository: 
 
-==================== 🚨 FORENSIC CACHE ACTIVITY 🚨 ====================
+==================== 🚨 CACHE ACTIVITY 🚨 ====================
 
 [2026-02-10 12:05:41.307 +01:00] [INF] [48] Jellyfin.Server.Implementations.Item.BaseItemRepository: CACHE MISS
 CacheKey: "GetItems:a636739902c7fe8e309e0b113f60eb27c5d18562ac7853b017766bdddd7c690d"
@@ -100,7 +100,7 @@ CacheKey: "GetItems:a636739902c7fe8e309e0b113f60eb27c5d18562ac7853b017766bdddd7c
 ItemCount: 0
 [2026-02-10 12:05:46.622 +01:00] [INF] [48] Jellyfin.Server.Implementations.Item.BaseItemRepository: 
 
-==================== 🚨 FORENSIC CACHE ACTIVITY 🚨 ====================
+==================== 🚨 CACHE ACTIVITY 🚨 ====================
 
 [2026-02-10 12:05:46.626 +01:00] [INF] [48] Jellyfin.Server.Implementations.Item.BaseItemRepository: CACHE HIT
 CacheKey: "GetItems:a636739902c7fe8e309e0b113f60eb27c5d18562ac7853b017766bdddd7c690d"
@@ -124,4 +124,5 @@ Filter (FULL): InternalItemsQuery { Recursive: True, StartIndex: null, Limit: 0,
 ItemCount: 0
 !----------------------------------------------------!
 !--- END: OPEN MUSIC-VIDEO LIBRARY WITH 6 SUB-FOLDERS (FULLY BROKEN OFFICIAL RELEASE) ---!
+
 !----------------------------------------------------!
