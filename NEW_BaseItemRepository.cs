@@ -260,29 +260,31 @@ public sealed class BaseItemRepository
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        // Generate deterministic cache key
         string cacheKey = GenerateCacheKey(filter);
 
-        // Try returning cached result
-        if (_queryCache.TryGetValue(cacheKey, out QueryResult<BaseItemDto>? cachedResult) && cachedResult != null)
+        bool isGroupedRecursiveQuery =
+            filter.Recursive &&
+            filter.GroupByPresentationUniqueKey;
+
+        if (_queryCache.TryGetValue(cacheKey, out QueryResult<BaseItemDto>? cached) && cached != null)
         {
-            return cachedResult;
+            return cached;
         }
 
         QueryResult<BaseItemDto> result;
 
-        // Fast path: simple list retrieval without total count
+        // Fast path: no total count needed
         if (!filter.EnableTotalRecordCount || (!filter.Limit.HasValue && (filter.StartIndex ?? 0) == 0))
         {
-            var returnList = GetItemList(filter) ?? new List<BaseItemDto>();
+            var items = GetItemList(filter) ?? new List<BaseItemDto>();
+
             result = new QueryResult<BaseItemDto>(
                 filter.StartIndex,
-                returnList.Count,
-                returnList);
+                items.Count,
+                items);
         }
         else
         {
-            // Full query path
             PrepareFilterQuery(filter);
             result = new QueryResult<BaseItemDto>();
 
@@ -292,7 +294,8 @@ public sealed class BaseItemRepository
             dbQuery = TranslateQuery(dbQuery, context, filter)!;
             dbQuery = ApplyGroupingFilter(context, dbQuery, filter)!;
 
-            if (filter.EnableTotalRecordCount)
+            // Skip count for grouped recursive queries
+            if (filter.EnableTotalRecordCount && !isGroupedRecursiveQuery)
             {
                 result.TotalRecordCount = dbQuery.Count();
             }
@@ -304,56 +307,61 @@ public sealed class BaseItemRepository
                 .AsEnumerable()
                 .Where(e => e != null)
                 .Select(e => DeserializeBaseItem(e!, filter.SkipDeserialization)!)
-                .ToList(); // IReadOnlyList compatible
+                .ToList();
 
             result.StartIndex = filter.StartIndex ?? 0;
         }
 
-        // Only cache if under item limit to avoid memory explosion
         if (result.Items.Count <= CACHE_ITEM_LIMIT)
         {
-            var cacheEntryOptions = new MemoryCacheEntryOptions
-            {
-                SlidingExpiration = CACHE_SLIDING_EXPIRATION,
-                AbsoluteExpirationRelativeToNow = CACHE_ABSOLUTE_EXPIRATION,
-                Size = result.Items.Count // approximate size
-            };
-
-            _queryCache.Set(cacheKey, result, cacheEntryOptions);
+            _queryCache.Set(
+                cacheKey,
+                result,
+                new MemoryCacheEntryOptions
+                {
+                    SlidingExpiration = CACHE_SLIDING_EXPIRATION,
+                    AbsoluteExpirationRelativeToNow = CACHE_ABSOLUTE_EXPIRATION,
+                    Size = result.Items.Count
+                });
         }
 
         return result;
     }
 
-    // ---------- GenerateCacheKey helper ----------
+    // ---------- GenerateCacheKey ----------
     private string GenerateCacheKey(InternalItemsQuery filter)
     {
-        if (filter == null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
+
+        // Ensure ParentScope is always an array for consistent hashing
+        Guid[] parentIds = filter.TopParentIds != null && filter.TopParentIds.Length > 0
+            ? filter.TopParentIds.OrderBy(id => id).ToArray()
+            : filter.ParentId != Guid.Empty
+                ? new[] { filter.ParentId }
+                : Array.Empty<Guid>();
 
         var keyObject = new
         {
             UserId = filter.User?.Id,
-            LibraryId =
-                filter.TopParentIds != null && filter.TopParentIds.Length > 0
-                    ? string.Join(",", filter.TopParentIds.OrderBy(id => id))
-                    : filter.ParentId == Guid.Empty ? null : filter.ParentId.ToString(),
+            ParentIds = parentIds,
             filter.StartIndex,
             filter.Limit,
+            filter.Recursive,
+            filter.GroupByPresentationUniqueKey,
             IncludeItemTypes = filter.IncludeItemTypes?.OrderBy(t => t).ToArray(),
+            filter.EnableTotalRecordCount,
             filter.SkipDeserialization,
-            filter.EnableTotalRecordCount
+            filter.CollapseBoxSetItems,
+            filter.IsVirtualItem,
+            MediaTypes = filter.MediaTypes?.OrderBy(m => m).ToArray()
         };
 
         string json = JsonSerializer.Serialize(keyObject);
 
         using var sha256 = SHA256.Create();
-        byte[] hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(json));
+        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(json));
 
-        var sb = new StringBuilder(64);
-        foreach (var b in hashBytes)
-            sb.Append(b.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
-
-        return $"GetItems:{sb}";
+        return $"GetItems:{Convert.ToHexString(hash)}";
     }
 
     /// <inheritdoc />
