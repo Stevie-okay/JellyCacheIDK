@@ -337,7 +337,12 @@ public sealed class BaseItemRepository
                 filter.TopParentIds != null && filter.TopParentIds.Length > 0
                     ? string.Join(",", filter.TopParentIds.OrderBy(id => id))
                     : filter.ParentId == Guid.Empty ? null : filter.ParentId.ToString(),
+            ItemIds =
+                filter.ItemIds != null && filter.ItemIds.Length > 0
+                    ? string.Join(",", filter.ItemIds.OrderBy(id => id))
+                    : null,
             filter.StartIndex,
+            filter.recursive,
             filter.Limit,
             IncludeItemTypes = filter.IncludeItemTypes?.OrderBy(t => t).ToArray(),
             filter.SkipDeserialization,
