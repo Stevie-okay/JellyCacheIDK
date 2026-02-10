@@ -39,7 +39,7 @@ ItemCount: 100
 !--- END: OPEN MOVIE LIBRARY THAT ALREADY WORKED BEFORE ---!
 !----------------------------------------------------------!
 !----------------------------------------------------!
-!--- START: OPEN MUSIC-VIDEO LIBRARY WITH 6 SUB-FOLDERS (FULLY BROKEN OFFICIAL RELEASE) ---!
+!--- START: OPEN MUSIC-VIDEO LIBRARY WITH 6 SUB-FOLDERS (FULLY BROKEN IN OFFICIAL RELEASE) ---!
 !----------------------------------------------------!
 
 [2026-02-10 12:05:41.304 +01:00] [INF] [48] Jellyfin.Server.Implementations.Item.BaseItemRepository: 
@@ -122,6 +122,7 @@ ItemCount: 0
 !--- END: OPEN MUSIC-VIDEO LIBRARY WITH 6 SUB-FOLDERS (FULLY BROKEN OFFICIAL RELEASE) ---!
 
 !----------------------------------------------------!
+
 
 
 
