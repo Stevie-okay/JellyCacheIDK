@@ -4,7 +4,7 @@ Update:
 "AncestorIds" this one seems to be the culprit of all. If this flag is allowed through all hell breaks lose.  
 In V0.6 i tried to only disable this flag (few exceptions since there are sooo many flags).  
   
-    
+Install:     
 Step 1. Stop Jellyfin  
 Step 2. Go to Jellyfin/Server and make a backup of your existing Jellyfin.Server.Implementations.dll. In case there is a bug or something, simply replace it again.  
 Step 3. Replace Jellyfin.Server.Implementations.dll with my version (you only need the .dll file).  
