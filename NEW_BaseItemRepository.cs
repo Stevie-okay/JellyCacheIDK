@@ -41,6 +41,7 @@ using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Caching.Memory;
+using System.IO;
 
 namespace Jellyfin.Server.Implementations.Item;
 
@@ -325,38 +326,131 @@ public sealed class BaseItemRepository
         return result;
     }
 
+    private static readonly Lazy<HashSet<string>> _cacheFlags =
+        new(() =>
+        {
+            try
+            {
+                var dllPath = typeof(BaseItemRepository).Assembly.Location;
+                var dllDir = Path.GetDirectoryName(dllPath)!;
+                var flagsFile = Path.Combine(dllDir, "cache-flags.txt");
+
+                if (!File.Exists(flagsFile))
+                    return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                return new HashSet<string>(
+                    File.ReadAllLines(flagsFile)
+                        .Select(l => l.Trim())
+                        .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith('#')), // use char overload
+                    StringComparer.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            }
+        });
+
     // ---------- GenerateCacheKey helper ----------
     private string GenerateCacheKey(InternalItemsQuery filter)
     {
         if (filter == null) throw new ArgumentNullException(nameof(filter));
 
+        var flags = _cacheFlags.Value;
+        bool On(string name) => flags.Contains(name);
+
+        static string? JoinOrdered<T>(IEnumerable<T>? values)
+            => values == null || !values.Any() ? null : string.Join(",", values.OrderBy(v => v));
+
+        static string? JoinGuids(IEnumerable<Guid>? values)
+            => values == null || !values.Any()
+                ? null
+                : string.Join(",", values.OrderBy(v => v).Select(v => v.ToString("N")));
+
+        static string? JoinEnums<T>(IEnumerable<T>? values) where T : struct, Enum
+            => values == null || !values.Any()
+                ? null
+                : string.Join(",", values.OrderBy(v => v).Select(v => v.ToString()));
+
         var keyObject = new
         {
-            UserId = filter.User?.Id,
-            LibraryId =
-                filter.TopParentIds != null && filter.TopParentIds.Length > 0
-                    ? string.Join(",", filter.TopParentIds.OrderBy(id => id))
-                    : filter.ParentId == Guid.Empty ? null : filter.ParentId.ToString(),
-            ItemIds =
-                filter.ItemIds != null && filter.ItemIds.Length > 0
-                    ? string.Join(",", filter.ItemIds.OrderBy(id => id))
-                    : null,
+            UserId = On("User") ? filter.User?.Id : null,
             filter.StartIndex,
-            filter.recursive,
             filter.Limit,
-            IncludeItemTypes = filter.IncludeItemTypes?.OrderBy(t => t).ToArray(),
-            filter.SkipDeserialization,
-            filter.EnableTotalRecordCount
+            ParentId = On("ParentId") && filter.ParentId != Guid.Empty ? filter.ParentId.ToString("N") : null,
+            TopParentIds = On("TopParentIds") ? JoinGuids(filter.TopParentIds) : null,
+            AncestorIds = On("AncestorIds") ? JoinGuids(filter.AncestorIds) : null,
+            ItemIds = On("ItemIds") ? JoinGuids(filter.ItemIds) : null,
+            ExcludeItemIds = On("ExcludeItemIds") ? JoinGuids(filter.ExcludeItemIds) : null,
+            AlbumIds = On("AlbumIds") ? JoinGuids(filter.AlbumIds) : null,
+            ExcludeArtistIds = On("ExcludeArtistIds") ? JoinGuids(filter.ExcludeArtistIds) : null,
+            BoxSetLibraryFolders = On("BoxSetLibraryFolders") ? JoinGuids(filter.BoxSetLibraryFolders) : null,
+            ChannelIds = On("ChannelIds") ? JoinGuids(filter.ChannelIds) : null,
+            IncludeItemTypes = On("IncludeItemTypes") ? JoinEnums(filter.IncludeItemTypes) : null,
+            ExcludeItemTypes = On("ExcludeItemTypes") ? JoinEnums(filter.ExcludeItemTypes) : null,
+            MediaTypes = On("MediaTypes") ? JoinEnums(filter.MediaTypes) : null,
+            Genres = On("Genres") ? JoinOrdered(filter.Genres) : null,
+            GenreIds = On("GenreIds") ? JoinGuids(filter.GenreIds) : null,
+            StudioIds = On("StudioIds") ? JoinGuids(filter.StudioIds) : null,
+            Tags = On("Tags") ? JoinOrdered(filter.Tags) : null,
+            OfficialRatings = On("OfficialRatings") ? JoinOrdered(filter.OfficialRatings) : null,
+            Years = On("Years") ? JoinOrdered(filter.Years) : null,
+            SearchTermValue = On("SearchTerm") ? filter.SearchTerm : null,
+            NameContainsValue = On("NameContains") ? filter.NameContains : null,
+            NameStartsWithValue = On("NameStartsWith") ? filter.NameStartsWith : null,
+            NameStartsWithOrGreaterValue = On("NameStartsWithOrGreater") ? filter.NameStartsWithOrGreater : null,
+            NameLessThanValue = On("NameLessThan") ? filter.NameLessThan : null,
+            PersonIds = On("PersonIds") ? JoinGuids(filter.PersonIds) : null,
+            PersonTypes = On("PersonTypes") ? JoinOrdered(filter.PersonTypes) : null,
+            ArtistIds = On("ArtistIds") ? JoinGuids(filter.ArtistIds) : null,
+            AlbumArtistIds = On("AlbumArtistIds") ? JoinGuids(filter.AlbumArtistIds) : null,
+            OrderBy = On("OrderBy") ? filter.OrderBy?.Select(o => $"{o.OrderBy}:{o.SortOrder}") : null,
+            ParentType = On("ParentType") ? filter.ParentType : null,
+            ParentIndexNumber = On("ParentIndexNumber") ? filter.ParentIndexNumber : null,
+            ParentIndexNumberNotEquals = On("ParentIndexNumberNotEquals") ? filter.ParentIndexNumberNotEquals : null,
+            IndexNumber = On("IndexNumber") ? filter.IndexNumber : null,
+            MinIndexNumber = On("MinIndexNumber") ? filter.MinIndexNumber : null,
+            MinParentAndIndexNumber = On("MinParentAndIndexNumber") ? filter.MinParentAndIndexNumber : null,
+            AncestorWithPresentationUniqueKey = On("AncestorWithPresentationUniqueKey") ? filter.AncestorWithPresentationUniqueKey : null,
+            AlbumIdsValue = On("OtherAlbumIds") ? JoinGuids(filter.AlbumIds) : null,
+            ExcludeArtistIdsValue = On("OtherExcludeArtistIds") ? JoinGuids(filter.ExcludeArtistIds) : null,
+            BoxSetLibraryFoldersValue = On("OtherBoxSetLibraryFolders") ? JoinGuids(filter.BoxSetLibraryFolders) : null,
+            ChannelIdsValue = On("OtherChannelIds") ? JoinGuids(filter.ChannelIds) : null,
+            ContributingArtistIdsValue = On("OtherContributingArtistIds") ? JoinGuids(filter.ContributingArtistIds) : null,
+            IsFavorite = On("IsFavorite") ? filter.IsFavorite : null,
+            IsFavoriteOrLiked = On("IsFavoriteOrLiked") ? filter.IsFavoriteOrLiked : null,
+            IsLiked = On("IsLiked") ? filter.IsLiked : null,
+            IsPlayed = On("IsPlayed") ? filter.IsPlayed : null,
+            IsResumable = On("IsResumable") ? filter.IsResumable : null,
+            IsFolder = On("IsFolder") ? filter.IsFolder : null,
+            IsLocked = On("IsLocked") ? filter.IsLocked : null,
+            IsMissing = On("IsMissing") ? filter.IsMissing : null,
+            IsUnaired = On("IsUnaired") ? filter.IsUnaired : null,
+            IsSpecialSeason = On("IsSpecialSeason") ? filter.IsSpecialSeason : null,
+            IsVirtualItem = On("IsVirtualItem") ? filter.IsVirtualItem : null,
+            IsAiring = On("IsAiring") ? filter.IsAiring : null,
+            IsMovie = On("IsMovie") ? filter.IsMovie : null,
+            IsSeries = On("IsSeries") ? filter.IsSeries : null,
+            IsKids = On("IsKids") ? filter.IsKids : null,
+            IsNews = On("IsNews") ? filter.IsNews : null,
+            IsSports = On("IsSports") ? filter.IsSports : null,
+            MinPremiereDate = On("MinPremiereDate") ? filter.MinPremiereDate : null,
+            MaxPremiereDate = On("MaxPremiereDate") ? filter.MaxPremiereDate : null,
+            MinStartDate = On("MinStartDate") ? filter.MinStartDate : null,
+            MaxStartDate = On("MaxStartDate") ? filter.MaxStartDate : null,
+            MinEndDate = On("MinEndDate") ? filter.MinEndDate : null,
+            MaxEndDate = On("MaxEndDate") ? filter.MaxEndDate : null,
+            MinCommunityRating = On("MinCommunityRating") ? filter.MinCommunityRating : null,
+            MinCriticRating = On("MinCriticRating") ? filter.MinCriticRating : null,
         };
 
-        string json = JsonSerializer.Serialize(keyObject);
+        var json = JsonSerializer.Serialize(keyObject);
 
         using var sha256 = SHA256.Create();
-        byte[] hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(json));
+        var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(json));
 
         var sb = new StringBuilder(64);
         foreach (var b in hashBytes)
-            sb.Append(b.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
+            sb.Append(b.ToString("x2", CultureInfo.InvariantCulture));
 
         return $"GetItems:{sb}";
     }
